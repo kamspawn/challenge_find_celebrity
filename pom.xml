@@ -14,6 +14,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jdk.version>1.8</jdk.version>
 	<junit.version>4.12</junit.version>
+	<log4j.version>2.11.2</log4j.version>
   </properties>
 
   <dependencies>
@@ -34,12 +35,23 @@
 	    <artifactId>commons-lang</artifactId>
 	    <version>2.6</version>
 	</dependency>
+	
+	<dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>${log4j.version}</version>
+    </dependency>
+
+    <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>${log4j.version}</version>
+    </dependency>	
   </dependencies>
   
   <build>
 		<finalName>FindCelebrity</finalName>
 		<plugins>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-eclipse-plugin</artifactId>

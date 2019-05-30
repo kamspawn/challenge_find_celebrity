@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -23,6 +25,8 @@ import com.find.celebrity.exception.WrongFormatException;
 
 public class FileProcessor {
 
+	private static final Logger logger = LogManager.getLogger(FileProcessor.class);
+	
 	private Map<Integer, People> teamMap = new HashMap<Integer, People>();
 
 	public void loadFile(String fileName) throws WrongFormatException, IOException {
@@ -37,64 +41,76 @@ public class FileProcessor {
 		Iterator<Row> rowIterator = sheet.iterator();
 		while (rowIterator.hasNext()) {
 			Row row = rowIterator.next();
-			if (row.getRowNum() == 0)
+			int rowNum = row.getRowNum();
+			
+			if (rowNum == 0)
 				continue;// Avoid the column headers
 
-			Cell codeIdCell = row.getCell(0);// Code Id
-			if (codeIdCell == null) {
-				System.out.println("Row [" + (row.getRowNum() + 1) + "] Code_Id is required");
-				continue;
-			}
+			String tmpId = processCodeId(row.getCell(0), rowNum); // Code Id
 
-			String tmpId = null;
-			switch (codeIdCell.getCellType()){
-                case Cell.CELL_TYPE_NUMERIC:
-                	int cellVal = Double.valueOf(codeIdCell.getNumericCellValue()).intValue();
-                	tmpId = String.valueOf(cellVal);
-                    break;
-                case Cell.CELL_TYPE_STRING:
-                	tmpId = codeIdCell.getStringCellValue();
-                    break;
-            }		
-			
-			
 			if (!StringUtils.isNumeric(tmpId)) {
-				System.out.println("Row [" + (row.getRowNum() + 1) + "] Code_Id is not numeric value [" + tmpId + "]");
+				logger.error("Row [" + (rowNum + 1) + "] Code_Id is not numeric value [" + tmpId + "]");
 				continue;
 			}
-
+			
 			Cell nameCell = row.getCell(1);// Name
 			if (nameCell == null || StringUtils.isBlank(nameCell.getStringCellValue())) {
-				System.out.println("Row [" + (row.getRowNum() + 1) + "] Code_Id [" + tmpId + "] require a Name");
+				logger.error("Row [" + (rowNum + 1) + "] Code_Id [" + tmpId + "] require a Name");
 				continue;
 			}
 
 			People people = new People(Integer.valueOf(tmpId), nameCell.getStringCellValue());
 
-			Cell knowListCell = row.getCell(2);// KnowList
-			if (knowListCell != null) {
-				List<Integer> knowList = new ArrayList<>();
-				switch (knowListCell.getCellType()){
-	                case Cell.CELL_TYPE_NUMERIC:
-	                	int cellVal = Double.valueOf(knowListCell.getNumericCellValue()).intValue();
-	                	knowList.add(cellVal);
-	                    break;
-	                case Cell.CELL_TYPE_STRING:
-	                	if(StringUtils.isNotBlank(knowListCell.getStringCellValue())){
-	        				String tmpKnown = knowListCell.getStringCellValue();
-	        				knowList = Arrays.asList(tmpKnown.split("\\|"))
-	        						.stream().map(Integer::valueOf)
-	        						.collect(Collectors.toList());
-	                	}
-	                	break;
-				}		
-				people.setTeamKnowList(knowList);
-			}
+			processsKnowList(row.getCell(2), people);// KnowList
 			teamMap.put(people.getCodeId(), people);
 		}
 		file.close();
 	}
+	
+	private void processsKnowList(Cell knowListCell, People people) {
+		if (knowListCell != null) {
+			List<Integer> knowList = new ArrayList<>();
+			switch (knowListCell.getCellType()){
+                case Cell.CELL_TYPE_NUMERIC:
+                	int cellVal = Double.valueOf(knowListCell.getNumericCellValue()).intValue();
+                	knowList.add(cellVal);
+                    break;
+                case Cell.CELL_TYPE_STRING:
+                	if(StringUtils.isNotBlank(knowListCell.getStringCellValue())){
+        				String tmpKnown = knowListCell.getStringCellValue();
+        				knowList = Arrays.asList(tmpKnown.split("\\|"))
+        						.stream().map(Integer::valueOf)
+        						.collect(Collectors.toList());
+                	}
+                	break;
+			}		
+			people.setTeamKnowList(knowList);
+		}
+	}
 
+	private String processCodeId(Cell codeIdCell, int rowNum) {
+		
+		String tmpId = null;
+		
+		if (codeIdCell == null) {
+			logger.error("Row [" + (rowNum + 1) + "] Code_Id is required");
+			return null;
+		}
+
+		switch (codeIdCell.getCellType()){
+            case Cell.CELL_TYPE_NUMERIC:
+            	int cellVal = Double.valueOf(codeIdCell.getNumericCellValue()).intValue();
+            	tmpId = String.valueOf(cellVal);
+                break;
+            case Cell.CELL_TYPE_STRING:
+            	tmpId = codeIdCell.getStringCellValue();
+                break;
+        }		
+		
+		return tmpId;
+	}
+	
+	
 	private void validateFile(File source) throws FileNotFoundException, WrongFormatException {
 		if (!source.exists() || !source.isFile())
 			throw new FileNotFoundException("File not Found "+source.getPath());
