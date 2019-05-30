@@ -21,7 +21,7 @@ public class FileProcessorTest {
 		
 		Map<Integer, People> teamMap = fileProcessor.getTeamMap();
 		
-		assertEquals(teamMap.size(), 10);
+		assertEquals(10, teamMap.size());
 	}
 
 	@Test(expected = FileNotFoundException.class)
@@ -53,6 +53,6 @@ public class FileProcessorTest {
 		
 		Map<Integer, People> teamMap = fileProcessor.getTeamMap();
 		
-		assertEquals(teamMap.size(), 7);
+		assertEquals(7, teamMap.size());
 	}
 }

@@ -38,6 +38,8 @@ public class FileProcessor {
 		XSSFWorkbook workbook = new XSSFWorkbook(file);
 		XSSFSheet sheet = workbook.getSheetAt(0);
 
+		logger.info("Reading: "+fileName);
+		
 		Iterator<Row> rowIterator = sheet.iterator();
 		while (rowIterator.hasNext()) {
 			Row row = rowIterator.next();
@@ -118,8 +120,9 @@ public class FileProcessor {
 		String name = source.getName();
 		String extension = name.substring(name.lastIndexOf("."));
 
-		if (!extension.equalsIgnoreCase(".xlsx"))
+		if (!extension.equalsIgnoreCase(".xlsx")) {
 			throw new WrongFormatException(extension);
+		}
 	}
 
 	public Map<Integer, People> getTeamMap() {

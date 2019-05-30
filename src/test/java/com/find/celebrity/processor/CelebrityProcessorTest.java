@@ -29,7 +29,7 @@ public class CelebrityProcessorTest {
 		
 		List<Integer> celebrityList = CelebrityProcessor.getCelebrityId(teamMap);
 		
-		assertEquals(celebrityList.size(), 1);
+		assertEquals(1, celebrityList.size());
 	}
 
 	@Test
